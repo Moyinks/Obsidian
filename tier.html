@@ -208,7 +208,7 @@
             <div class="final-amount" id="amountDisplay">€000.XX</div>
             <div id="statusMsg" style="color: var(--alert-color); font-size: 0.9rem;">[ ENCRYPTED ]</div>
             <br>
-            <button class="proceed-btn" id="nextBtn" onclick="goVerify()">Proceed to Payment</button>
+            <button class="proceed-btn" id="nextBtn" onclick="goVerify()">Proceed to Payment Gateway</button>
         </div>
     </div>
 
@@ -321,7 +321,7 @@
         function goVerify() {
             const btn = document.getElementById('nextBtn');
             btn.innerText = "INITIALIZING GATEWAY...";
-            setTimeout(() => window.location.href = 'verify.html', 800);
+            setTimeout(() => window.location.href = 'payment.html', 800);
         }
     </script>
 </body>

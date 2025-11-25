@@ -273,24 +273,24 @@
 <body>
 
     <div class="mobile-nav-trigger" onclick="toggleMenu()">
-        <span id="currentSectionLabel">>> STATUS_OVERVIEW</span>
+        <span id="currentSectionLabel">>> STATUS OVERVIEW</span>
         <span class="trigger-icon">▼</span>
     </div>
 
     <nav class="sidebar" id="navMenu">
         <div class="logo">>> VAULT_9284</div>
         
-        <button class="nav-btn active" onclick="switchTab('overview', 'STATUS_OVERVIEW')">STATUS</button>
-        <button class="nav-btn" onclick="switchTab('notes', 'ENCRYPTED_NOTES')">NOTES</button>
-        <button class="nav-btn" onclick="switchTab('files', 'SECURE_UPLOAD')">FILES</button>
-        <button class="nav-btn" onclick="switchTab('burner', 'BURNER_ID_GEN')">COMMS</button>
+        <button class="nav-btn active" onclick="switchTab('overview', 'STATUS OVERVIEW')">STATUS</button>
+        <button class="nav-btn" onclick="switchTab('notes', 'ENCRYPTED NOTES')">NOTES</button>
+        <button class="nav-btn" onclick="switchTab('files', 'SECURE UPLOAD')">FILES</button>
+        <button class="nav-btn" onclick="switchTab('burner', 'BURNER ID GEN')">COMMS</button>
         
         <div class="logout-btn" onclick="logout()">TERMINATE SESSION</div>
     </nav>
 
     <main class="main-content">
         <header>
-            <div class="session-info">USER: <span style="color:#fff">jasonnm.dev</span></div>
+            <div class="session-info">USER: <span style="color:#fff">jasonnm</span></div>
             <div class="session-timer" id="timer">00:00:00</div>
         </header>
 
@@ -305,13 +305,13 @@
                 <div class="widget">
                     <h3>IP CONFIGURATION</h3>
                     <div style="color: var(--primary-color);">MASKING ACTIVE</div>
-                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">NODE: FRANKFURT_04</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">NODE: ZURICH_04</div>
                 </div>
                 <div class="widget">
                     <h3>ACTIVITY LOG</h3>
                     <div style="font-family: monospace; font-size: 0.7rem; color: #888; line-height: 1.4;">
-                        > Handshake accepted<br>
-                        > Token verified<br>
+                        > Payment verified<br>
+                        > Token accepted<br>
                         > Ledger sync complete<br>
                         > <span style="color: var(--accent-color)">Session established</span>
                     </div>
@@ -360,7 +360,7 @@
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         // 2. SECURITY CHECK
-        // Must have basic Auth AND Active Session Token
+        // Must have basic Auth AND Active Session Token from token.html
         if (!sessionStorage.getItem('vault_auth') || !sessionStorage.getItem('vault_session_active')) {
             window.location.href = 'index.html';
         }

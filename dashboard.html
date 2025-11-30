@@ -419,17 +419,129 @@
             window.location.href = 'index.html';
         }
 
-        function encryptNote() {
+                // --- REAL ENCRYPTION LOGIC (AES-GCM) ---
+
+        // 1. CONFIGURATION
+        // In a real app, 'salt' should be random and stored with the data. 
+        // For this simulation, we use a fixed salt so the Master Key always works.
+        const SALT = new TextEncoder().encode("VAULT_SECURE_SALT_V1"); 
+        const IV_LENGTH = 12; // Standard for AES-GCM
+
+        // 2. DERIVE CRYPTO KEY FROM MASTER TOKEN
+        async function getKey(password) {
+            const enc = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                "raw", 
+                enc.encode(password), 
+                { name: "PBKDF2" }, 
+                false, 
+                ["deriveKey"]
+            );
+            
+            return window.crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: SALT,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                keyMaterial,
+                { name: "AES-GCM", length: 256 },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        // 3. ENCRYPT FUNCTION
+        async function encryptNote() {
             const input = document.getElementById('noteInput');
             const output = document.getElementById('noteOutput');
-            if(input.value) {
-                // Fake encryption: Base64 then reverse string + add salt
-                const hash = btoa(input.value).split('').reverse().join('');
-                output.innerText = `HASH: ${hash}==X9`;
-                output.style.color = "var(--accent-color)";
-                input.value = "";
+            const clearText = input.value;
+            const masterKey = "GHOST-8824-XHGU"; // We use the known session key
+
+            if (!clearText) return;
+
+            try {
+                output.innerText = "GENERATING ENTROPY...";
+                output.style.color = "#888";
+
+                // A. Get the Key
+                const key = await getKey(masterKey);
+                
+                // B. Generate Random IV (Initialization Vector)
+                const iv = window.crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+                
+                // C. Encrypt
+                const encodedText = new TextEncoder().encode(clearText);
+                const encryptedBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    encodedText
+                );
+
+                // D. Convert to Storage Format (Base64 String)
+                // We store: IV + Ciphertext
+                const ivArray = Array.from(iv);
+                const bodyArray = Array.from(new Uint8Array(encryptedBuffer));
+                const package = btoa(String.fromCharCode(...ivArray.concat(bodyArray)));
+
+                // E. Save to Storage (Real Persistence)
+                localStorage.setItem('vault_saved_note', package);
+
+                // F. UI Update
+                setTimeout(() => {
+                    output.innerText = `>> ENCRYPTED & SAVED TO LOCAL STORAGE:\n${package.substring(0, 30)}...`;
+                    output.style.color = "var(--accent-color)";
+                    input.value = ""; // Clear the sensitive input
+                }, 800);
+
+            } catch (e) {
+                console.error(e);
+                output.innerText = ">> ENCRYPTION ERROR";
+                output.style.color = "var(--alert-color)";
             }
         }
+
+        // 4. DECRYPT FUNCTION (Auto-load on startup)
+        async function loadAndDecrypt() {
+            const saved = localStorage.getItem('vault_saved_note');
+            const output = document.getElementById('noteOutput');
+            const masterKey = "GHOST-8824-XHGU"; 
+
+            if(!saved) return;
+
+            try {
+                // A. Decode from Base64
+                const raw = atob(saved);
+                const rawArray = new Uint8Array(raw.length);
+                for(let i=0; i<raw.length; i++) rawArray[i] = raw.charCodeAt(i);
+
+                // B. Split IV and Data
+                const iv = rawArray.slice(0, IV_LENGTH);
+                const data = rawArray.slice(IV_LENGTH);
+
+                // C. Decrypt
+                const key = await getKey(masterKey);
+                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    data
+                );
+
+                // D. Display Plaintext
+                const dec = new TextDecoder();
+                output.innerText = `>> DECRYPTED FROM STORAGE:\n"${dec.decode(decryptedBuffer)}"`;
+                output.style.color = "#fff";
+
+            } catch (e) {
+                output.innerText = ">> ERROR: DECRYPTION FAILED (INVALID KEY)";
+                output.style.color = "var(--alert-color)";
+            }
+        }
+
+        // Call this when page loads to show saved notes
+        loadAndDecrypt();
+
 
         function triggerUpload() {
             const bar = document.getElementById('progressBar');

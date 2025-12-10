@@ -6,6 +6,10 @@
     <meta name="theme-color" content="#050505">
     <link rel="manifest" href="manifest.json">
     <title>SECURE VAULT // DASHBOARD</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
@@ -27,553 +31,430 @@
             font-family: var(--font-main);
             height: 100vh;
             display: flex;
-            flex-direction: row; /* Default Desktop Layout */
+            flex-direction: row; 
             overflow: hidden;
         }
 
         /* ============================
-           DESKTOP SIDEBAR
+           UI STYLES (Original Dropdown Vibe)
            ============================ */
         .sidebar {
-            width: 260px;
-            background: var(--panel-bg);
-            border-right: 1px solid var(--secondary-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            z-index: 20;
-            flex-shrink: 0;
+            width: 260px; background: var(--panel-bg); border-right: 1px solid var(--secondary-color);
+            display: flex; flex-direction: column; padding: 20px; z-index: 20; flex-shrink: 0;
             transition: all 0.3s ease-in-out;
         }
-
-        .logo {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--secondary-color);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: #888;
-            text-align: left;
-            padding: 15px;
-            font-family: var(--font-main);
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.2s;
-            border-left: 2px solid transparent;
-            width: 100%;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            color: var(--primary-color);
-            background: rgba(0, 255, 234, 0.05);
-            border-left: 2px solid var(--primary-color);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: var(--alert-color);
-            border: 1px solid var(--alert-color);
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            transition: 0.2s;
-        }
+        .logo { font-size: 1.2rem; color: var(--primary-color); border-bottom: 1px solid var(--secondary-color); padding-bottom: 20px; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; }
+        .nav-btn { background: transparent; border: none; color: #888; text-align: left; padding: 15px; font-family: var(--font-main); font-size: 1rem; cursor: pointer; transition: 0.2s; border-left: 2px solid transparent; width: 100%; text-transform: uppercase; margin-bottom: 5px; }
+        .nav-btn:hover, .nav-btn.active { color: var(--primary-color); background: rgba(0, 255, 234, 0.05); border-left: 2px solid var(--primary-color); }
+        .logout-btn { margin-top: auto; color: var(--alert-color); border: 1px solid var(--alert-color); padding: 12px; text-align: center; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; }
         .logout-btn:hover { background: var(--alert-color); color: #000; }
 
-        /* ============================
-           MAIN CONTENT AREA
-           ============================ */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            position: relative;
-            overflow-y: auto;
-            background: radial-gradient(circle at top right, rgba(0, 59, 54, 0.2), transparent 70%);
-        }
+        .main-content { flex: 1; padding: 30px; position: relative; overflow-y: auto; background: radial-gradient(circle at top right, rgba(0, 59, 54, 0.2), transparent 70%); }
+        .main-content::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 1; }
 
-        /* CRT Scanline Overlay */
-        .main-content::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-        }
-
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .session-info { font-size: 0.9rem; color: #888; }
-        .session-timer { font-size: 1.5rem; color: var(--accent-color); text-shadow: 0 0 5px var(--accent-color); }
 
-        /* Widgets */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .widget { background: rgba(0,0,0,0.6); border: 1px solid var(--secondary-color); padding: 20px; position: relative; z-index: 2; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .widget h3 { color: #888; margin-bottom: 15px; font-size: 0.8rem; border-bottom: 1px solid #333; padding-bottom: 8px; text-transform: uppercase; }
 
-        .widget {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--secondary-color);
-            padding: 20px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        .widget h3 {
-            color: #888;
-            margin-bottom: 15px;
-            font-size: 0.8rem;
-            border-bottom: 1px solid #333;
-            padding-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        /* Forms & Inputs */
-        textarea, input[type="text"] {
-            width: 100%;
-            background: #000;
-            border: 1px solid #333;
-            color: var(--primary-color);
-            font-family: var(--font-main);
-            padding: 12px;
-            margin-bottom: 12px;
-            font-size: 1rem;
-            resize: none;
-            outline: none;
-        }
-
-        .action-btn {
-            background: var(--secondary-color);
-            color: #fff;
-            border: none;
-            padding: 12px 15px;
-            cursor: pointer;
-            font-family: var(--font-main);
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: 0.2s;
-        }
+        textarea, input[type="text"], input[type="password"] { width: 100%; background: #000; border: 1px solid #333; color: var(--primary-color); font-family: var(--font-main); padding: 12px; margin-bottom: 12px; font-size: 1rem; resize: none; outline: none; }
+        .action-btn { background: var(--secondary-color); color: #fff; border: none; padding: 12px 15px; cursor: pointer; font-family: var(--font-main); width: 100%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
         .action-btn:hover { background: var(--primary-color); color: #000; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Tab Logic */
+        .data-list { list-style: none; max-height: 250px; overflow-y: auto; }
+        .data-item { padding: 10px; border-bottom: 1px solid #222; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; color: #ccc; }
+        .data-item:last-child { border-bottom: none; }
+        .timestamp { font-size: 0.7rem; color: #666; margin-left: auto; margin-right: 10px; }
+        .download-icon { cursor: pointer; color: var(--primary-color); font-size: 1.2rem; }
+
         .panel-section { display: none; animation: fadeIn 0.4s ease; }
         .panel-section.active { display: block; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-        /* Mobile Header (Hidden on Desktop) */
-        .mobile-nav-trigger { display: none; }
+        /* SECURITY OVERLAY */
+        #keyOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .key-box {
+            width: 100%; max-width: 400px;
+            border: 1px solid var(--alert-color); padding: 30px;
+            background: #050505; box-shadow: 0 0 20px rgba(255, 0, 60, 0.2);
+            text-align: center;
+        }
 
-        /* ============================
-           MOBILE RESPONSIVE LOGIC
-           ============================ */
+        /* MOBILE RESPONSIVE */
+        .mobile-nav-trigger { display: none; }
+        
         @media (max-width: 768px) {
             body { flex-direction: column; }
-
-            /* 1. The Mobile Header Bar */
-            .mobile-nav-trigger {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 15px 20px;
-                background: #0a0a0a;
-                border-bottom: 1px solid var(--primary-color);
-                color: var(--primary-color);
-                font-size: 1rem;
-                cursor: pointer;
-                z-index: 50;
-                position: relative;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-                user-select: none;
-            }
-
+            .mobile-nav-trigger { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #0a0a0a; border-bottom: 1px solid var(--primary-color); color: var(--primary-color); font-size: 1rem; cursor: pointer; z-index: 50; position: relative; }
             .trigger-icon { transition: transform 0.3s; }
             .mobile-nav-trigger.open .trigger-icon { transform: rotate(180deg); }
-
-            /* 2. Sidebar transforms into Dropdown */
-            .sidebar {
-                position: absolute;
-                top: 55px; /* Height of header */
-                left: 0;
-                width: 100%;
-                height: auto;
-                max-height: 0; /* Hidden by default */
-                overflow: hidden;
-                padding: 0;
-                border-right: none;
-                border-bottom: 1px solid var(--primary-color);
-                background: rgba(10, 10, 10, 0.98);
-                box-shadow: 0 10px 20px rgba(0,0,0,0.9);
-            }
-
-            .sidebar.open {
-                max-height: 500px; /* Expand */
-                padding-bottom: 10px;
-            }
-
-            /* Mobile specific styling for items */
+            .sidebar { position: absolute; top: 55px; left: 0; width: 100%; height: auto; max-height: 0; overflow: hidden; padding: 0; border-right: none; border-bottom: 1px solid var(--primary-color); background: rgba(10, 10, 10, 0.98); box-shadow: 0 10px 20px rgba(0,0,0,0.9); }
+            .sidebar.open { max-height: 500px; padding-bottom: 10px; }
             .logo { display: none; }
-            
-            .nav-btn {
-                text-align: center;
-                padding: 15px;
-                border-left: none;
-                border-bottom: 1px solid #222;
-                margin: 0;
-            }
-
-            .nav-btn.active {
-                border-left: none;
-                background: rgba(0, 255, 234, 0.1);
-                color: #fff;
-            }
-
-            .logout-btn {
-                margin: 15px 20px 5px 20px;
-            }
-
-            .main-content {
-                padding: 20px;
-                /* Adjust height to account for mobile header */
-                height: calc(100vh - 55px); 
-            }
-
-            header {
-                margin-top: 5px;
-                padding-bottom: 10px;
-                font-size: 0.8rem;
-            }
-            
-            .session-timer { font-size: 1.2rem; }
+            .nav-btn { text-align: center; padding: 15px; border-left: none; border-bottom: 1px solid #222; margin: 0; }
+            .nav-btn.active { border-left: none; background: rgba(0, 255, 234, 0.1); color: #fff; }
+            .logout-btn { margin: 15px 20px 5px 20px; }
+            .main-content { padding: 20px; height: calc(100vh - 55px); }
+            header { margin-top: 5px; padding-bottom: 10px; font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
 
+    <div id="keyOverlay">
+        <div class="key-box">
+            <h2 style="color:var(--alert-color); margin-bottom:10px;">ZERO KNOWLEDGE LOCK</h2>
+            <p style="font-size:0.8rem; color:#888; margin-bottom:20px;">
+                PASTE YOUR GENERATED MASTER KEY BELOW.<br>
+                WITHOUT THIS, DATA IS UNREADABLE.
+            </p>
+            <input type="text" id="masterKeyInput" placeholder="XXXX-XXXX-XXXX-XXXX" style="border-color:var(--alert-color); text-align:center;">
+            <button class="action-btn" style="background:var(--alert-color); color:#000;" onclick="deriveKeyAndUnlock()">DECRYPT WORKSPACE</button>
+        </div>
+    </div>
+
     <div class="mobile-nav-trigger" onclick="toggleMenu()">
-        <span id="currentSectionLabel">>> STATUS OVERVIEW</span>
+        <span id="currentSectionLabel">>> SYSTEM OVERVIEW</span>
         <span class="trigger-icon">▼</span>
     </div>
 
     <nav class="sidebar" id="navMenu">
         <div class="logo">>> VAULT_9284</div>
-        
-        <button class="nav-btn active" onclick="switchTab('overview', 'STATUS OVERVIEW')">STATUS</button>
+        <button class="nav-btn active" onclick="switchTab('overview', 'SYSTEM OVERVIEW')">OVERVIEW</button>
         <button class="nav-btn" onclick="switchTab('notes', 'ENCRYPTED NOTES')">NOTES</button>
         <button class="nav-btn" onclick="switchTab('files', 'SECURE UPLOAD')">FILES</button>
-        <button class="nav-btn" onclick="switchTab('burner', 'BURNER ID GEN')">COMMS</button>
-        
         <div class="logout-btn" onclick="logout()">TERMINATE SESSION</div>
     </nav>
 
     <main class="main-content">
         <header>
-            <div class="session-info">USER: <span style="color:#fff">jasonnm</span></div>
-            <div class="session-timer" id="timer">00:00:00</div>
+            <div class="session-info">USER: <span id="userEmailDisplay" style="color:#fff">...</span></div>
         </header>
 
         <div id="overview" class="panel-section active">
             <div class="dashboard-grid">
                 <div class="widget">
                     <h3>SYSTEM STATUS</h3>
-                    <div style="color: var(--accent-color); font-size: 1.2rem; margin-bottom:5px;">SECURE</div>
-                    <div style="font-size: 0.8rem; color: #666;">ENCRYPTION: AES-256</div>
-                    <div style="font-size: 0.8rem; color: #666;">TUNNEL ID: #8X92-MM92</div>
+                    <div style="color: var(--accent-color); font-size: 1.2rem; margin-bottom:5px;">LOCKED</div>
+                    <div style="font-size: 0.8rem; color: #666;">CLIENT-SIDE ENCRYPTION: ACTIVE</div>
+                    <div style="font-size: 0.8rem; color: #666;">ALGORITHM: AES-GCM (256-bit)</div>
                 </div>
                 <div class="widget">
-                    <h3>IP CONFIGURATION</h3>
-                    <div style="color: var(--primary-color);">MASKING ACTIVE</div>
-                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">NODE: ZURICH_04</div>
-                </div>
-                <div class="widget">
-                    <h3>ACTIVITY LOG</h3>
-                    <div style="font-family: monospace; font-size: 0.7rem; color: #888; line-height: 1.4;">
-                        > Payment verified<br>
-                        > Token accepted<br>
-                        > Ledger sync complete<br>
-                        > <span style="color: var(--accent-color)">Session established</span>
-                    </div>
+                    <h3>AUDIT LOG</h3>
+                    <ul class="data-list" id="auditLog" style="height: 150px; font-family: monospace; font-size: 0.75rem;">
+                        <li class="data-item">WAITING FOR MASTER KEY...</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
         <div id="notes" class="panel-section">
             <div class="widget">
-                <h3>SECURE NOTEPAD</h3>
-                <textarea id="noteInput" rows="8" placeholder="Input raw data for encryption..."></textarea>
-                <button class="action-btn" onclick="encryptNote()">ENCRYPT & STORE</button>
-                <div id="noteOutput" style="margin-top:15px; word-break: break-all; color: #888; font-size: 0.9rem; min-height: 20px;"></div>
+                <h3>SECURE NOTEPAD (E2EE)</h3>
+                <textarea id="noteInput" rows="6" placeholder="DATA WILL BE ENCRYPTED BEFORE SENDING..."></textarea>
+                <button class="action-btn" onclick="saveEncryptedNote()">ENCRYPT & STORE</button>
+            </div>
+            <div class="widget">
+                <h3>DECRYPTED RECORDS</h3>
+                <ul class="data-list" id="notesList">
+                    <li class="data-item" style="justify-content:center">WAITING FOR DECRYPTION...</li>
+                </ul>
             </div>
         </div>
 
         <div id="files" class="panel-section">
             <div class="widget">
-                <h3>DEEP STORAGE UPLOAD</h3>
-                <div style="border: 1px dashed #333; padding: 30px; text-align: center; margin-bottom: 15px; color: #666; cursor: pointer;" onclick="triggerUpload()">
-                    [ TAP TO SELECT PAYLOAD ]
+                <h3>ENCRYPTED UPLOAD</h3>
+                <div style="border: 1px dashed #333; padding: 30px; text-align: center; margin-bottom: 15px; color: #666; cursor: pointer;" onclick="document.getElementById('fileInput').click()">
+                    [ SELECT FILE TO ENCRYPT ]
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect()">
+                    <div id="fileNameDisplay" style="margin-top:10px; color: var(--primary-color);"></div>
                 </div>
-                <div id="progressBar" style="width: 100%; height: 5px; background: #222; margin-bottom: 10px; display:none;">
-                    <div id="progressFill" style="width: 0%; height: 100%; background: var(--primary-color);"></div>
-                </div>
-                <button class="action-btn" onclick="triggerUpload()">INITIATE TRANSFER</button>
-                <div id="uploadStatus" style="margin-top:10px; font-size:0.8rem; color: var(--accent-color); text-align: right;"></div>
+                <button class="action-btn" id="uploadBtn" onclick="uploadEncryptedFile()" disabled>ENCRYPT & UPLOAD</button>
             </div>
-        </div>
-
-        <div id="burner" class="panel-section">
             <div class="widget">
-                <h3>DISPOSABLE ID GENERATOR</h3>
-                <div style="text-align: center; padding: 20px 0;">
-                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">TEMP VOIP NUMBER (15 MIN)</div>
-                    <div id="burnerDisplay" style="font-size: 2rem; color: var(--primary-color); letter-spacing: 2px;">--- --- ----</div>
-                </div>
-                <button class="action-btn" onclick="generateNumber()">GENERATE NEW ID</button>
+                <h3>ARCHIVED FILES</h3>
+                <ul class="data-list" id="filesList">
+                    <li class="data-item" style="justify-content:center">LOADING...</li>
+                </ul>
             </div>
         </div>
 
     </main>
 
     <script>
-        // 1. PWA REGISTRATION
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+        // --- GLOBAL CRYPTO STATE ---
+        let masterCryptoKey = null;
 
-        // 2. SECURITY CHECK
-        // Must have basic Auth AND Active Session Token from token.html
-        if (!sessionStorage.getItem('vault_auth') || !sessionStorage.getItem('vault_session_active')) {
-            window.location.href = 'index.html';
-        }
-
-        // 3. TIMER LOGIC
-        // Get duration from session, default to 24h if missing
-        const durationHours = parseInt(sessionStorage.getItem('vault_duration')) || 24;
-        let secondsLeft = durationHours * 3600;
-
-        function updateTimer() {
-            secondsLeft--;
-            
-            // Format HH:MM:SS
-            const h = Math.floor(secondsLeft / 3600).toString().padStart(2,'0');
-            const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2,'0');
-            const s = (secondsLeft % 60).toString().padStart(2,'0');
-            
-            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
-            
-            if(secondsLeft <= 0) logout();
-        }
-        // Start timer
-        setInterval(updateTimer, 1000);
-        updateTimer();
-
-        // 4. NAVIGATION LOGIC
-        const navMenu = document.getElementById('navMenu');
-        const navTrigger = document.querySelector('.mobile-nav-trigger');
-        const navLabel = document.getElementById('currentSectionLabel');
-
-        function toggleMenu() {
-            navMenu.classList.toggle('open');
-            navTrigger.classList.toggle('open');
-        }
-
-        function switchTab(tabId, labelName) {
-            // Switch Content
-            document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-
-            // Switch Buttons
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Mobile: Update Label and Close Menu
-            if (window.innerWidth <= 768) {
-                navLabel.innerText = ">> " + labelName;
-                navMenu.classList.remove('open');
-                navTrigger.classList.remove('open');
+        // 1. AUTH CHECK
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) window.location.href = 'index.html';
+            else {
+                document.getElementById('userEmailDisplay').innerText = session.user.email;
             }
         }
+        checkAuth();
 
-        // 5. TOOL SIMULATIONS
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
+        // 2. CRYPTO FUNCTIONS
+        async function deriveKeyAndUnlock() {
+            const rawKey = document.getElementById('masterKeyInput').value.trim();
+            if(!rawKey) return;
 
-                // --- REAL ENCRYPTION LOGIC (AES-GCM) ---
-
-        // 1. CONFIGURATION
-        // In a real app, 'salt' should be random and stored with the data. 
-        // For this simulation, we use a fixed salt so the Master Key always works.
-        const SALT = new TextEncoder().encode("VAULT_SECURE_SALT_V1"); 
-        const IV_LENGTH = 12; // Standard for AES-GCM
-
-        // 2. DERIVE CRYPTO KEY FROM MASTER TOKEN
-        async function getKey(password) {
-            const enc = new TextEncoder();
-            const keyMaterial = await window.crypto.subtle.importKey(
-                "raw", 
-                enc.encode(password), 
-                { name: "PBKDF2" }, 
-                false, 
-                ["deriveKey"]
-            );
+            const btn = document.querySelector('#keyOverlay button');
+            btn.innerText = "DERIVING KEYS...";
             
-            return window.crypto.subtle.deriveKey(
-                {
-                    name: "PBKDF2",
-                    salt: SALT,
-                    iterations: 100000,
-                    hash: "SHA-256"
-                },
-                keyMaterial,
-                { name: "AES-GCM", length: 256 },
-                true,
-                ["encrypt", "decrypt"]
-            );
-        }
-
-        // 3. ENCRYPT FUNCTION
-        async function encryptNote() {
-            const input = document.getElementById('noteInput');
-            const output = document.getElementById('noteOutput');
-            const clearText = input.value;
-            const masterKey = "GHOST-8824-XHGU"; // We use the known session key
-
-            if (!clearText) return;
-
             try {
-                output.innerText = "GENERATING ENTROPY...";
-                output.style.color = "#888";
-
-                // A. Get the Key
-                const key = await getKey(masterKey);
+                const encoder = new TextEncoder();
                 
-                // B. Generate Random IV (Initialization Vector)
-                const iv = window.crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-                
-                // C. Encrypt
-                const encodedText = new TextEncoder().encode(clearText);
-                const encryptedBuffer = await window.crypto.subtle.encrypt(
-                    { name: "AES-GCM", iv: iv },
-                    key,
-                    encodedText
+                // We use the raw key input + User Email as salt to generate a persistent AES key
+                // Note: For a portfolio, using Email as Salt is acceptable. 
+                // Ideally, salt should be random and stored, but this ensures 'Stateless' Zero Knowledge.
+                const email = document.getElementById('userEmailDisplay').innerText;
+                const salt = encoder.encode(email + "_obsidian_salt_v1");
+                const keyMaterial = await window.crypto.subtle.importKey(
+                    "raw", encoder.encode(rawKey), { name: "PBKDF2" }, false, ["deriveKey"]
                 );
 
-                // D. Convert to Storage Format (Base64 String)
-                // We store: IV + Ciphertext
-                const ivArray = Array.from(iv);
-                const bodyArray = Array.from(new Uint8Array(encryptedBuffer));
-                const package = btoa(String.fromCharCode(...ivArray.concat(bodyArray)));
+                masterCryptoKey = await window.crypto.subtle.deriveKey(
+                    {
+                        name: "PBKDF2",
+                        salt: salt,
+                        iterations: 100000,
+                        hash: "SHA-256"
+                    },
+                    keyMaterial,
+                    { name: "AES-GCM", length: 256 },
+                    false,
+                    ["encrypt", "decrypt"]
+                );
 
-                // E. Save to Storage (Real Persistence)
-                localStorage.setItem('vault_saved_note', package);
-
-                // F. UI Update
-                setTimeout(() => {
-                    output.innerText = `>> ENCRYPTED & SAVED TO LOCAL STORAGE:\n${package.substring(0, 30)}...`;
-                    output.style.color = "var(--accent-color)";
-                    input.value = ""; // Clear the sensitive input
-                }, 800);
-
-            } catch (e) {
+                // Unlock UI
+                document.getElementById('keyOverlay').style.display = 'none';
+                logAction("MASTER KEY DERIVED IN MEMORY");
+                logAction("ZERO KNOWLEDGE MODE: ACTIVE");
+                
+                // Load Data
+                loadNotes();
+                loadFiles();
+            } catch(e) {
+                alert("KEY DERIVATION FAILED. CHECK CONSOLE.");
                 console.error(e);
-                output.innerText = ">> ENCRYPTION ERROR";
-                output.style.color = "var(--alert-color)";
             }
         }
 
-        // 4. DECRYPT FUNCTION (Auto-load on startup)
-        async function loadAndDecrypt() {
-            const saved = localStorage.getItem('vault_saved_note');
-            const output = document.getElementById('noteOutput');
-            const masterKey = "GHOST-8824-XHGU"; 
+        async function encryptData(text) {
+            const encoder = new TextEncoder();
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await window.crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                masterCryptoKey,
+                encoder.encode(text)
+            );
+            return JSON.stringify({ 
+                iv: Array.from(iv), 
+                data: Array.from(new Uint8Array(encrypted)) 
+            });
+        }
 
-            if(!saved) return;
-
+        async function decryptData(jsonStr) {
             try {
-                // A. Decode from Base64
-                const raw = atob(saved);
-                const rawArray = new Uint8Array(raw.length);
-                for(let i=0; i<raw.length; i++) rawArray[i] = raw.charCodeAt(i);
-
-                // B. Split IV and Data
-                const iv = rawArray.slice(0, IV_LENGTH);
-                const data = rawArray.slice(IV_LENGTH);
-
-                // C. Decrypt
-                const key = await getKey(masterKey);
-                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                const package = JSON.parse(jsonStr);
+                const iv = new Uint8Array(package.iv);
+                const data = new Uint8Array(package.data);
+                const decrypted = await window.crypto.subtle.decrypt(
                     { name: "AES-GCM", iv: iv },
-                    key,
+                    masterCryptoKey,
                     data
                 );
-
-                // D. Display Plaintext
-                const dec = new TextDecoder();
-                output.innerText = `>> DECRYPTED FROM STORAGE:\n"${dec.decode(decryptedBuffer)}"`;
-                output.style.color = "#fff";
-
+                return new TextDecoder().decode(decrypted);
             } catch (e) {
-                output.innerText = ">> ERROR: DECRYPTION FAILED (INVALID KEY)";
-                output.style.color = "var(--alert-color)";
+                return "[ENCRYPTION ERROR: WRONG KEY]";
             }
         }
 
-        // Call this when page loads to show saved notes
-        loadAndDecrypt();
+        // 3. UI LOGIC (NOTES)
+        async function saveEncryptedNote() {
+            const input = document.getElementById('noteInput');
+            if(!input.value) return;
 
+            logAction("ENCRYPTING PAYLOAD...");
+            const encryptedContent = await encryptData(input.value);
 
-        function triggerUpload() {
-            const bar = document.getElementById('progressBar');
-            const fill = document.getElementById('progressFill');
-            const stat = document.getElementById('uploadStatus');
-            
-            bar.style.display = 'block';
-            stat.innerText = "INITIALIZING...";
-            fill.style.width = "0%";
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error } = await supabase.from('notes').insert({ 
+                user_id: user.id, 
+                content: encryptedContent
+            });
 
-            let width = 0;
-            const interval = setInterval(() => {
-                // Random speed fluctuation
-                width += Math.random() * 5;
-                if (width >= 100) {
-                    width = 100;
-                    clearInterval(interval);
-                    stat.innerText = "UPLOAD COMPLETE. LOGS SCRUBBED.";
-                    stat.style.color = "var(--accent-color)";
-                }
-                fill.style.width = width + "%";
-            }, 100);
+            if(error) logAction("DB ERROR: " + error.message);
+            else {
+                logAction("CIPHERTEXT STORED SUCCESSFULLY");
+                input.value = "";
+                loadNotes();
+            }
         }
 
-        function generateNumber() {
-            const display = document.getElementById('burnerDisplay');
-            display.innerText = "GENERATING...";
-            setTimeout(() => {
-                const r = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
-                // Format: +1 (XXX) XXX-XXXX
-                display.innerText = `+1 (${r.substring(0,3)}) ${r.substring(3,6)}-${r.substring(6,10)}`;
-            }, 800);
+        async function loadNotes() {
+            const list = document.getElementById('notesList');
+            list.innerHTML = '<li class="data-item">FETCHING CIPHERTEXT...</li>';
+            
+            const { data } = await supabase.from('notes').select('*').order('created_at', {ascending: false});
+            
+            if(data) {
+                list.innerHTML = '';
+                for (const note of data) {
+                    const plaintext = await decryptData(note.content);
+                    const li = document.createElement('li');
+                    li.className = 'data-item';
+                    li.innerHTML = `
+                        <span style="color:${plaintext.includes('ERROR') ? 'var(--alert-color)' : '#fff'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">
+                            ${plaintext}
+                        </span>
+                        <span class="timestamp">DECRYPTED</span>
+                    `;
+                    list.appendChild(li);
+                }
+            } else {
+                list.innerHTML = '<li class="data-item" style="justify-content:center">NO RECORDS</li>';
+            }
+        }
+
+        // 4. UI LOGIC (FILES)
+        function handleFileSelect() {
+            const file = document.getElementById('fileInput').files[0];
+            if(file) {
+                document.getElementById('fileNameDisplay').innerText = `SELECTED: ${file.name}`;
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+
+        async function uploadEncryptedFile() {
+            const file = document.getElementById('fileInput').files[0];
+            const btn = document.getElementById('uploadBtn');
+            btn.innerText = "ENCRYPTING...";
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encryptedBuffer = await window.crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                masterCryptoKey,
+                arrayBuffer
+            );
+
+            // Payload: [IV 12 bytes] + [Encrypted Data]
+            const finalBuffer = new Uint8Array(iv.length + encryptedBuffer.byteLength);
+            finalBuffer.set(iv);
+            finalBuffer.set(new Uint8Array(encryptedBuffer), iv.length);
+
+            btn.innerText = "UPLOADING...";
+            const { data: { user } } = await supabase.auth.getUser();
+            const filePath = `${user.id}/${Date.now()}_${file.name}.enc`;
+
+            const { error } = await supabase.storage.from('uploads').upload(filePath, finalBuffer);
+
+            if(error) logAction("UPLOAD FAILED");
+            else {
+                logAction("ENCRYPTED FILE UPLOADED");
+                document.getElementById('fileNameDisplay').innerText = "";
+                document.getElementById('fileInput').value = "";
+                loadFiles();
+            }
+            btn.innerText = "ENCRYPT & UPLOAD";
+            btn.disabled = true;
+        }
+
+        async function loadFiles() {
+            const list = document.getElementById('filesList');
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data } = await supabase.storage.from('uploads').list(user.id + '/');
+
+            if (data && data.length > 0) {
+                list.innerHTML = '';
+                data.forEach(file => {
+                    const li = document.createElement('li');
+                    li.className = 'data-item';
+                    li.innerHTML = `
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;">${file.name}</span>
+                        <span class="download-icon" onclick="downloadAndDecrypt('${file.name}')">🔓</span>
+                    `;
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li class="data-item" style="justify-content:center">NO ARCHIVES</li>';
+            }
+        }
+
+        async function downloadAndDecrypt(fileName) {
+            logAction(`DOWNLOADING ${fileName}...`);
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data, error } = await supabase.storage.from('uploads').download(`${user.id}/${fileName}`);
+            
+            if(error) return logAction("DOWNLOAD FAILED");
+
+            logAction("DECRYPTING...");
+            const fullBuffer = await data.arrayBuffer();
+            
+            try {
+                const iv = new Uint8Array(fullBuffer.slice(0, 12));
+                const dataBuffer = fullBuffer.slice(12);
+                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    masterCryptoKey,
+                    dataBuffer
+                );
+
+                const blob = new Blob([decryptedBuffer]);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName.replace('.enc', '');
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                logAction("DECRYPTION SUCCESSFUL");
+            } catch(e) {
+                logAction("DECRYPTION FAILED (WRONG KEY?)");
+            }
+        }
+
+        // UTILS
+        function logAction(msg) {
+            const log = document.getElementById('auditLog');
+            const entry = document.createElement('li');
+            entry.className = 'data-item';
+            entry.style.border = 'none';
+            entry.style.padding = '2px 0';
+            entry.innerText = `> ${msg}`;
+            log.prepend(entry);
+        }
+
+        function toggleMenu() {
+            document.getElementById('navMenu').classList.toggle('open');
+            document.querySelector('.mobile-nav-trigger').classList.toggle('open');
+        }
+
+        function switchTab(id, label) {
+            document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            if(label) document.getElementById('currentSectionLabel').innerText = ">> " + label;
+            if(window.innerWidth <= 768) toggleMenu();
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            localStorage.removeItem('obsidian_user_email');
+            window.location.href = 'index.html';
         }
     </script>
 </body>

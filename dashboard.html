@@ -35,9 +35,7 @@
             overflow: hidden;
         }
 
-        /* ============================
-           UI STYLES (Original Dropdown Vibe)
-           ============================ */
+        /* --- UI STYLES --- */
         .sidebar {
             width: 260px; background: var(--panel-bg); border-right: 1px solid var(--secondary-color);
             display: flex; flex-direction: column; padding: 20px; z-index: 20; flex-shrink: 0;
@@ -59,20 +57,72 @@
         .widget { background: rgba(0,0,0,0.6); border: 1px solid var(--secondary-color); padding: 20px; position: relative; z-index: 2; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .widget h3 { color: #888; margin-bottom: 15px; font-size: 0.8rem; border-bottom: 1px solid #333; padding-bottom: 8px; text-transform: uppercase; }
 
+        /* INPUTS & BUTTONS */
         textarea, input[type="text"], input[type="password"] { width: 100%; background: #000; border: 1px solid #333; color: var(--primary-color); font-family: var(--font-main); padding: 12px; margin-bottom: 12px; font-size: 1rem; resize: none; outline: none; }
-        .action-btn { background: var(--secondary-color); color: #fff; border: none; padding: 12px 15px; cursor: pointer; font-family: var(--font-main); width: 100%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+        .action-btn { background: var(--secondary-color); color: #fff; border: none; padding: 12px 15px; cursor: pointer; font-family: var(--font-main); width: 100%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; font-size: 0.9rem; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .action-btn:hover { background: var(--primary-color); color: #000; }
-        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .action-btn:disabled { opacity: 0.5; cursor: wait; }
 
+        /* Small button for list items */
+        .btn-small { padding: 5px 10px; font-size: 0.75rem; width: auto; min-width: 100px; border: 1px solid var(--secondary-color); background: transparent; }
+        .btn-small:hover { background: var(--secondary-color); }
+
+        /* LISTS */
         .data-list { list-style: none; max-height: 250px; overflow-y: auto; }
-        .data-item { padding: 10px; border-bottom: 1px solid #222; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; color: #ccc; }
+        .data-item { padding: 12px; border-bottom: 1px solid #222; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; color: #ccc; transition: background 0.2s; }
         .data-item:last-child { border-bottom: none; }
-        .timestamp { font-size: 0.7rem; color: #666; margin-left: auto; margin-right: 10px; }
-        .download-icon { cursor: pointer; color: var(--primary-color); font-size: 1.2rem; }
+        .data-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .timestamp { font-size: 0.7rem; color: #666; margin-left: auto; margin-right: 15px; }
 
         .panel-section { display: none; animation: fadeIn 0.4s ease; }
         .panel-section.active { display: block; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* SPINNER ANIMATION */
+        .spinner {
+            width: 12px; height: 12px;
+            border: 2px solid #fff; border-bottom-color: transparent;
+            border-radius: 50%; display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MODAL STYLES (THEMED) */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.92); z-index: 200;
+            justify-content: center; align-items: center; padding: 20px;
+            backdrop-filter: blur(5px); animation: fadeIn 0.2s;
+        }
+        .modal-box {
+            width: 100%; max-width: 600px; 
+            background: #050505; /* Deep Black */
+            border: 1px solid var(--primary-color); 
+            padding: 2px; /* Inner border effect */
+            box-shadow: 0 0 30px rgba(0, 255, 234, 0.15);
+            display: flex; flex-direction: column;
+        }
+        .modal-inner {
+            background: rgba(10, 20, 20, 0.95);
+            padding: 20px; border: 1px solid var(--secondary-color);
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal-header { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 10px; align-items: center; }
+        .modal-header h3 { color: var(--primary-color); font-size: 1rem; letter-spacing: 1px; margin: 0; }
+        
+        .close-btn { background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 10px; }
+        .close-btn:hover { color: var(--alert-color); }
+
+        .modal-textarea {
+            width: 100%; background: #000; color: #fff; border: 1px solid #333;
+            font-family: var(--font-main); font-size: 0.9rem; padding: 15px;
+            min-height: 300px; resize: none; outline: none;
+        }
+        .modal-textarea:focus { border-color: var(--primary-color); }
+        
+        .modal-actions { display: flex; gap: 10px; margin-top: 5px; }
+        .btn-delete { background: transparent; border: 1px solid var(--alert-color); color: var(--alert-color); }
+        .btn-delete:hover { background: var(--alert-color); color: #000; }
 
         /* SECURITY OVERLAY */
         #keyOverlay {
@@ -117,7 +167,25 @@
                 WITHOUT THIS, DATA IS UNREADABLE.
             </p>
             <input type="text" id="masterKeyInput" placeholder="XXXX-XXXX-XXXX-XXXX" style="border-color:var(--alert-color); text-align:center;">
-            <button class="action-btn" style="background:var(--alert-color); color:#000;" onclick="deriveKeyAndUnlock()">DECRYPT WORKSPACE</button>
+            <button class="action-btn" style="background:var(--alert-color); color:#000;" onclick="handleUnlock()">DECRYPT WORKSPACE</button>
+        </div>
+    </div>
+
+    <div id="noteModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h3>>> SECURE RECORD</h3>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <input type="hidden" id="currentNoteId">
+                <textarea id="modalNoteContent" class="modal-textarea" spellcheck="false"></textarea>
+                
+                <div class="modal-actions">
+                    <button class="action-btn" onclick="updateCurrentNote()">SAVE CHANGES</button>
+                    <button class="action-btn btn-delete" onclick="deleteCurrentNote()">DELETE</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -191,108 +259,133 @@
     </main>
 
     <script>
-        // --- GLOBAL CRYPTO STATE ---
-        let masterCryptoKey = null;
+        // ==========================================
+        // 1. CRYPTO ENGINE
+        // ==========================================
+        const CryptoEngine = (() => {
+            'use strict';
+            const ITERATIONS = 100000; 
+            const HASH = 'SHA-256';
+            const KEY_LENGTH = 256;
 
-        // 1. AUTH CHECK
+            async function deriveKeyFromPassphrase(passphrase, salt) {
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw', encoder.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveKey']
+                );
+                return crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: salt, iterations: ITERATIONS, hash: HASH },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: KEY_LENGTH },
+                    false, 
+                    ['encrypt', 'decrypt']
+                );
+            }
+
+            async function encryptData(cryptoKey, plaintext) {
+                const encoder = new TextEncoder();
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encryptedBuffer = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv }, cryptoKey, encoder.encode(plaintext)
+                );
+                return {
+                    ciphertext: arrayBufferToBase64(encryptedBuffer),
+                    iv: arrayBufferToBase64(iv)
+                };
+            }
+
+            async function decryptData(cryptoKey, encryptedPayload) {
+                try {
+                    const decoder = new TextDecoder();
+                    const decryptedBuffer = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv: base64ToArrayBuffer(encryptedPayload.iv) },
+                        cryptoKey,
+                        base64ToArrayBuffer(encryptedPayload.ciphertext)
+                    );
+                    return decoder.decode(decryptedBuffer);
+                } catch (e) {
+                    console.error("Decryption failed", e);
+                    return null; 
+                }
+            }
+
+            // Helpers
+            function arrayBufferToBase64(buffer) {
+                const bytes = new Uint8Array(buffer);
+                let binary = '';
+                for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+                return btoa(binary);
+            }
+            function base64ToArrayBuffer(base64) {
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+                return bytes.buffer;
+            }
+
+            return { deriveKeyFromPassphrase, encryptData, decryptData, arrayBufferToBase64, base64ToArrayBuffer };
+        })();
+
+        // ==========================================
+        // 2. APPLICATION STATE
+        // ==========================================
+        let masterCryptoKey = null;
+        let currentUserEmail = null;
+
+        // ==========================================
+        // 3. AUTH & INIT
+        // ==========================================
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) window.location.href = 'index.html';
-            else {
-                document.getElementById('userEmailDisplay').innerText = session.user.email;
+            if (!session) {
+                window.location.href = 'index.html';
+            } else {
+                currentUserEmail = session.user.email;
+                document.getElementById('userEmailDisplay').innerText = currentUserEmail;
             }
         }
         checkAuth();
 
-        // 2. CRYPTO FUNCTIONS
-        async function deriveKeyAndUnlock() {
+        async function handleUnlock() {
             const rawKey = document.getElementById('masterKeyInput').value.trim();
             if(!rawKey) return;
 
             const btn = document.querySelector('#keyOverlay button');
-            btn.innerText = "DERIVING KEYS...";
+            btn.innerHTML = 'DERIVING... <span class="spinner"></span>';
             
             try {
                 const encoder = new TextEncoder();
-                
-                // We use the raw key input + User Email as salt to generate a persistent AES key
-                // Note: For a portfolio, using Email as Salt is acceptable. 
-                // Ideally, salt should be random and stored, but this ensures 'Stateless' Zero Knowledge.
-                const email = document.getElementById('userEmailDisplay').innerText;
-                const salt = encoder.encode(email + "_obsidian_salt_v1");
-                const keyMaterial = await window.crypto.subtle.importKey(
-                    "raw", encoder.encode(rawKey), { name: "PBKDF2" }, false, ["deriveKey"]
-                );
+                const salt = encoder.encode(currentUserEmail + "_obsidian_v1");
 
-                masterCryptoKey = await window.crypto.subtle.deriveKey(
-                    {
-                        name: "PBKDF2",
-                        salt: salt,
-                        iterations: 100000,
-                        hash: "SHA-256"
-                    },
-                    keyMaterial,
-                    { name: "AES-GCM", length: 256 },
-                    false,
-                    ["encrypt", "decrypt"]
-                );
+                masterCryptoKey = await CryptoEngine.deriveKeyFromPassphrase(rawKey, salt);
 
-                // Unlock UI
                 document.getElementById('keyOverlay').style.display = 'none';
                 logAction("MASTER KEY DERIVED IN MEMORY");
                 logAction("ZERO KNOWLEDGE MODE: ACTIVE");
                 
-                // Load Data
                 loadNotes();
                 loadFiles();
             } catch(e) {
-                alert("KEY DERIVATION FAILED. CHECK CONSOLE.");
+                alert("KEY DERIVATION FAILED.");
                 console.error(e);
+                btn.innerHTML = 'DECRYPT WORKSPACE';
             }
         }
 
-        async function encryptData(text) {
-            const encoder = new TextEncoder();
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const encrypted = await window.crypto.subtle.encrypt(
-                { name: "AES-GCM", iv: iv },
-                masterCryptoKey,
-                encoder.encode(text)
-            );
-            return JSON.stringify({ 
-                iv: Array.from(iv), 
-                data: Array.from(new Uint8Array(encrypted)) 
-            });
-        }
-
-        async function decryptData(jsonStr) {
-            try {
-                const package = JSON.parse(jsonStr);
-                const iv = new Uint8Array(package.iv);
-                const data = new Uint8Array(package.data);
-                const decrypted = await window.crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv: iv },
-                    masterCryptoKey,
-                    data
-                );
-                return new TextDecoder().decode(decrypted);
-            } catch (e) {
-                return "[ENCRYPTION ERROR: WRONG KEY]";
-            }
-        }
-
-        // 3. UI LOGIC (NOTES)
+        // ==========================================
+        // 4. NOTE LOGIC
+        // ==========================================
         async function saveEncryptedNote() {
             const input = document.getElementById('noteInput');
             if(!input.value) return;
 
             logAction("ENCRYPTING PAYLOAD...");
-            const encryptedContent = await encryptData(input.value);
-
+            const encryptedPackage = await CryptoEngine.encryptData(masterCryptoKey, input.value);
+            
             const { data: { user } } = await supabase.auth.getUser();
             const { error } = await supabase.from('notes').insert({ 
                 user_id: user.id, 
-                content: encryptedContent
+                content: JSON.stringify(encryptedPackage) 
             });
 
             if(error) logAction("DB ERROR: " + error.message);
@@ -305,21 +398,31 @@
 
         async function loadNotes() {
             const list = document.getElementById('notesList');
-            list.innerHTML = '<li class="data-item">FETCHING CIPHERTEXT...</li>';
+            list.innerHTML = '<li class="data-item">DECRYPTING ARCHIVE...</li>';
             
-            const { data } = await supabase.from('notes').select('*').order('created_at', {ascending: false});
+            const { data } = await supabase.from('notes').select('id, content, created_at').order('created_at', {ascending: false});
             
-            if(data) {
+            if(data && data.length > 0) {
                 list.innerHTML = '';
                 for (const note of data) {
-                    const plaintext = await decryptData(note.content);
+                    let payload, plaintext = "[INVALID FORMAT]";
+                    try { 
+                        payload = JSON.parse(note.content); 
+                        plaintext = await CryptoEngine.decryptData(masterCryptoKey, payload);
+                        if(plaintext === null) plaintext = "[DECRYPTION FAILED]";
+                    } catch { }
+
                     const li = document.createElement('li');
                     li.className = 'data-item';
+                    li.style.cursor = "pointer";
+                    li.onclick = () => openNoteModal(note.id, plaintext);
+
+                    const preview = plaintext.substring(0, 40) + (plaintext.length > 40 ? "..." : "");
                     li.innerHTML = `
-                        <span style="color:${plaintext.includes('ERROR') ? 'var(--alert-color)' : '#fff'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">
-                            ${plaintext}
+                        <span style="color:${plaintext.includes('FAILED') ? 'var(--alert-color)' : '#fff'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">
+                            ${preview}
                         </span>
-                        <span class="timestamp">DECRYPTED</span>
+                        <span class="timestamp">OPEN ></span>
                     `;
                     list.appendChild(li);
                 }
@@ -328,7 +431,63 @@
             }
         }
 
-        // 4. UI LOGIC (FILES)
+        // --- MODAL ACTIONS ---
+        function openNoteModal(id, text) {
+            document.getElementById('currentNoteId').value = id;
+            document.getElementById('modalNoteContent').value = text;
+            document.getElementById('noteModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('noteModal').style.display = 'none';
+        }
+
+        async function updateCurrentNote() {
+            const id = document.getElementById('currentNoteId').value;
+            const newText = document.getElementById('modalNoteContent').value;
+            const btn = document.querySelector('#noteModal .action-btn');
+            const originalText = btn.innerText;
+            
+            if(!newText) return;
+            
+            btn.innerHTML = 'ENCRYPTING... <span class="spinner"></span>';
+            btn.disabled = true;
+            
+            const encryptedPackage = await CryptoEngine.encryptData(masterCryptoKey, newText);
+            
+            const { error } = await supabase
+                .from('notes')
+                .update({ content: JSON.stringify(encryptedPackage) })
+                .eq('id', id);
+
+            btn.disabled = false;
+            btn.innerText = originalText;
+
+            if(error) alert("UPDATE FAILED: " + error.message);
+            else {
+                closeModal();
+                loadNotes();
+                logAction("NOTE UPDATED & RE-ENCRYPTED");
+            }
+        }
+
+        async function deleteCurrentNote() {
+            if(!confirm("PERMANENTLY DELETE THIS RECORD? THIS CANNOT BE UNDONE.")) return;
+            
+            const id = document.getElementById('currentNoteId').value;
+            const { error } = await supabase.from('notes').delete().eq('id', id);
+            
+            if(error) alert("DELETE FAILED");
+            else {
+                closeModal();
+                loadNotes();
+                logAction("NOTE DELETED FOREVER");
+            }
+        }
+
+        // ==========================================
+        // 5. FILE LOGIC (IMPROVED DOWNLOAD)
+        // ==========================================
         function handleFileSelect() {
             const file = document.getElementById('fileInput').files[0];
             if(file) {
@@ -340,36 +499,48 @@
         async function uploadEncryptedFile() {
             const file = document.getElementById('fileInput').files[0];
             const btn = document.getElementById('uploadBtn');
-            btn.innerText = "ENCRYPTING...";
+            const originalText = btn.innerText;
+
+            btn.innerHTML = 'READING... <span class="spinner"></span>';
+            btn.disabled = true;
             
-            const arrayBuffer = await file.arrayBuffer();
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const encryptedBuffer = await window.crypto.subtle.encrypt(
-                { name: "AES-GCM", iv: iv },
-                masterCryptoKey,
-                arrayBuffer
-            );
+            try {
+                // 1. Read File
+                const fileBuffer = await file.arrayBuffer();
+                
+                // 2. Encrypt
+                btn.innerHTML = 'ENCRYPTING... <span class="spinner"></span>';
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const encryptedBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv }, masterCryptoKey, fileBuffer
+                );
 
-            // Payload: [IV 12 bytes] + [Encrypted Data]
-            const finalBuffer = new Uint8Array(iv.length + encryptedBuffer.byteLength);
-            finalBuffer.set(iv);
-            finalBuffer.set(new Uint8Array(encryptedBuffer), iv.length);
+                // 3. Combine
+                const finalBuffer = new Uint8Array(iv.length + encryptedBuffer.byteLength);
+                finalBuffer.set(iv);
+                finalBuffer.set(new Uint8Array(encryptedBuffer), iv.length);
 
-            btn.innerText = "UPLOADING...";
-            const { data: { user } } = await supabase.auth.getUser();
-            const filePath = `${user.id}/${Date.now()}_${file.name}.enc`;
+                // 4. Upload
+                btn.innerHTML = 'UPLOADING... <span class="spinner"></span>';
+                const { data: { user } } = await supabase.auth.getUser();
+                const filePath = `${user.id}/${Date.now()}_${file.name}.enc`;
 
-            const { error } = await supabase.storage.from('uploads').upload(filePath, finalBuffer);
+                const { error } = await supabase.storage.from('uploads').upload(filePath, finalBuffer);
 
-            if(error) logAction("UPLOAD FAILED");
-            else {
+                if(error) throw error;
+
                 logAction("ENCRYPTED FILE UPLOADED");
                 document.getElementById('fileNameDisplay').innerText = "";
                 document.getElementById('fileInput').value = "";
                 loadFiles();
+                
+            } catch (e) {
+                logAction("UPLOAD FAILED: " + e.message);
+                alert("Upload failed. See log.");
+            } finally {
+                btn.innerText = "ENCRYPT & UPLOAD";
+                btn.disabled = true;
             }
-            btn.innerText = "ENCRYPT & UPLOAD";
-            btn.disabled = true;
         }
 
         async function loadFiles() {
@@ -382,9 +553,15 @@
                 data.forEach(file => {
                     const li = document.createElement('li');
                     li.className = 'data-item';
+                    
+                    // NEW: Better Layout for Download
                     li.innerHTML = `
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;">${file.name}</span>
-                        <span class="download-icon" onclick="downloadAndDecrypt('${file.name}')">🔓</span>
+                        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;">
+                            <span style="color:var(--primary-color)">[ENC]</span> ${file.name}
+                        </div>
+                        <button class="action-btn btn-small" id="btn-${file.name}" onclick="downloadAndDecrypt('${file.name}', this.id)">
+                            DOWNLOAD
+                        </button>
                     `;
                     list.appendChild(li);
                 });
@@ -393,40 +570,63 @@
             }
         }
 
-        async function downloadAndDecrypt(fileName) {
-            logAction(`DOWNLOADING ${fileName}...`);
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data, error } = await supabase.storage.from('uploads').download(`${user.id}/${fileName}`);
-            
-            if(error) return logAction("DOWNLOAD FAILED");
+        async function downloadAndDecrypt(fileName, btnId) {
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerText;
 
-            logAction("DECRYPTING...");
-            const fullBuffer = await data.arrayBuffer();
+            // STATUS 1: NETWORK FETCH
+            btn.innerHTML = 'FETCHING <span class="spinner"></span>';
+            btn.disabled = true;
+            logAction(`DOWNLOADING ${fileName}...`);
             
             try {
+                const { data: { user } } = await supabase.auth.getUser();
+                const { data, error } = await supabase.storage.from('uploads').download(`${user.id}/${fileName}`);
+                if(error) throw error;
+
+                // STATUS 2: DECRYPTION (CPU INTENSIVE)
+                btn.innerHTML = 'DECRYPTING...';
+                // Small timeout to let UI update before the main thread freezes for decryption
+                await new Promise(r => setTimeout(r, 50)); 
+
+                const fullBuffer = await data.arrayBuffer();
+                
+                // Extract IV (First 12 bytes)
                 const iv = new Uint8Array(fullBuffer.slice(0, 12));
                 const dataBuffer = fullBuffer.slice(12);
+
                 const decryptedBuffer = await window.crypto.subtle.decrypt(
                     { name: "AES-GCM", iv: iv },
                     masterCryptoKey,
                     dataBuffer
                 );
 
+                // STATUS 3: SAVE TO DISK
+                btn.innerText = 'SAVING...';
+                
                 const blob = new Blob([decryptedBuffer]);
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = fileName.replace('.enc', '');
+                a.download = fileName.replace('.enc', ''); 
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
+                
                 logAction("DECRYPTION SUCCESSFUL");
             } catch(e) {
-                logAction("DECRYPTION FAILED (WRONG KEY?)");
+                console.error(e);
+                logAction("DECRYPTION FAILED");
+                alert("Decryption failed. Ensure you have the correct key.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
 
-        // UTILS
+        // ==========================================
+        // 6. UTILS
+        // ==========================================
         function logAction(msg) {
             const log = document.getElementById('auditLog');
             const entry = document.createElement('li');
